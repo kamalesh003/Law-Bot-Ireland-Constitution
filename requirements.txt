@@ -1,0 +1,29 @@
+# Web framework
+fastapi
+uvicorn[standard]
+aiofiles
+
+# Settings & env
+python-dotenv
+pydantic
+pydantic-settings
+
+# Redis session store
+upstash-redis
+
+# Rate limiting
+slowapi
+httpx
+
+# OpenAI
+openai
+tiktoken
+
+# LangChain — core + OpenAI integration
+langchain
+langchain-core
+langchain-openai
+
+# Chroma vector store — standalone package (replaces langchain-community)
+langchain-chroma
+chromadb

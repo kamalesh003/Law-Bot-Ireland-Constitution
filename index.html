@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+    <title>Irish Legal AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2c5282;
+            --accent: #e53e3e;
+            --light: #f7fafc;
+            --dark: #2d3748;
+            --success: #38a169;
+            --warning: #dd6b20;
+            --danger: #e53e3e;
+            --gray: #a0aec0;
+            --bg-light: #edf2f7;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-light);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+            color: #fff;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .security-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #fafafa;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        
+        .ai-message {
+            background: white;
+            border: 1px solid var(--border);
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .ai-message .message-header {
+            color: var(--primary);
+        }
+        
+        .user-message .message-header {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .message-content {
+            line-height: 1.6;
+        }
+        
+        .message-content p {
+            margin-bottom: 10px;
+        }
+        
+        .sources-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+        }
+        
+        .sources-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .source-item {
+            padding: 8px;
+            background: rgba(56, 178, 172, 0.1);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        /* Input Area */
+        .input-container {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        textarea {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            resize: none;
+            font-size: 1rem;
+            height: 60px;
+            transition: border-color 0.2s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 54, 93, 0.1);
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: var(--secondary);
+        }
+        
+        button:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .history-question {
+            font-weight: 500;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 15px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            align-self: flex-start;
+            max-width: 80px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gray);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        /* Status indicators */
+        .connected {
+            color: var(--success);
+        }
+        
+        .disconnected {
+            color: var(--danger);
+        }
+        
+        .expiring-soon {
+            color: var(--warning);
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .disclaimer {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="static/logo.jpg" alt="Logo" style="height: 85px; width: auto;">
+                <h1>Irish Legal AI Assistant</h1>
+            </div>
+            <div class="session-info">
+                <div class="security-badge">
+                    <i class="fas fa-lock"></i>
+                    <span>Secure Session</span>
+                </div>
+                <div id="sessionTimer">Loading session...</div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-layout">
+            <!-- Chat Interface -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2><i class="fas fa-comments"></i> Legal Consultation</h2>
+                    <div class="status-indicator">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="connectionStatus">Connecting...</span>
+                    </div>
+                </div>
+                
+                <div class="chat-history" id="chatHistory">
+                    <div class="message ai-message">
+                        <div class="message-header">
+                            <span><i class="fas fa-robot"></i> Legal Assistant</span>
+                            <span>Just now</span>
+                        </div>
+                        <div class="message-content">
+                            <p>Welcome to the Irish Legal AI Assistant! I'm here to help with your legal questions regarding Irish law.</p>
+                            <p>Please ask your question in the box below. I'll provide a concise answer with relevant legal sources.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-container">
+                    <div class="input-area">
+                        <textarea id="userInput" placeholder="Ask a question about Irish law..." required></textarea>
+                        <button id="sendButton">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-history"></i> Session History
+                    </div>
+                    <div class="card-body" id="historyList">
+                        <p style="color: var(--gray); text-align: center;">No history yet</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-lightbulb"></i> Tips for Better Results
+                    </div>
+                    <div class="card-body">
+                        <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <li>Be specific with your questions</li>
+                            <li>Include relevant context when possible</li>
+                            <li>Ask about recent legal changes</li>
+                            <li>Request practical implications</li>
+                            <li>Specify areas of law (employment, property, etc.)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="disclaimer">
+                <p><strong>Disclaimer:</strong> This AI assistant provides general legal information for educational purposes only and does not constitute legal advice. For personal legal matters, consult a qualified solicitor. The developers accept no liability for actions taken based on this information.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatHistory = document.getElementById('chatHistory');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const historyList = document.getElementById('historyList');
+            const sessionTimerElement = document.getElementById('sessionTimer');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const statusDot = document.getElementById('statusDot');
+            
+            // Session management
+            let sessionId = null;
+            let sessionHistory = [];
+            let sessionCheckInterval;
+            const SESSION_CHECK_INTERVAL = 1000; // Check every second
+            
+            // Initialize session
+            function initializeSession() {
+                updateConnectionStatus('connecting');
+                checkSessionStatus();
+                sessionCheckInterval = setInterval(checkSessionStatus, SESSION_CHECK_INTERVAL);
+            }
+            
+            // Update connection status UI
+            function updateConnectionStatus(status) {
+                switch(status) {
+                    case 'connected':
+                        connectionStatus.textContent = "Connected";
+                        connectionStatus.className = "connected";
+                        statusDot.style.backgroundColor = "var(--success)";
+                        break;
+                    case 'disconnected':
+                        connectionStatus.textContent = "Disconnected";
+                        connectionStatus.className = "disconnected";
+                        statusDot.style.backgroundColor = "var(--danger)";
+                        break;
+                    case 'connecting':
+                        connectionStatus.textContent = "Connecting...";
+                        connectionStatus.className = "";
+                        statusDot.style.backgroundColor = "var(--gray)";
+                        break;
+                }
+            }
+            
+            // Check session status with backend
+            async function checkSessionStatus() {
+                try {
+                    const response = await fetch('session/status', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) throw new Error('Status check failed');
+                    
+                    const data = await response.json();
+                    updateConnectionStatus('connected');
+                    updateSessionDisplay(data);
+                    
+                    if (data.status === 'expired') {
+                        handleSessionExpiry();
+                    }
+                } catch (error) {
+                    console.error('Session status check error:', error);
+                    updateConnectionStatus('disconnected');
+                    sessionTimerElement.textContent = "Connection Error";
+                }
+            }
+            
+            // Update session timer display
+            function updateSessionDisplay(sessionData) {
+                switch (sessionData.status) {
+                    case 'new':
+                        sessionTimerElement.textContent = "New Session";
+                        sessionTimerElement.classList.remove('expiring-soon');
+                        sessionId = null;
+                        sessionHistory = [];
+                        updateSessionHistory([]);
+                        break;
+                        
+                    case 'expired':
+                        sessionTimerElement.textContent = "Session Expired";
+                        sessionTimerElement.classList.remove('expiring-soon');
+                        sessionId = null;
+                        sessionHistory = [];
+                        updateSessionHistory([]);
+                        break;
+                        
+                    case 'active':
+                        sessionId = sessionData.session_id;
+                        const minutes = Math.floor(sessionData.ttl / 60);
+                        const seconds = sessionData.ttl % 60;
+                        
+                        // Add warning when session is about to expire
+                        if (sessionData.ttl < 120) { // 2 minutes left
+                            sessionTimerElement.classList.add('expiring-soon');
+                        } else {
+                            sessionTimerElement.classList.remove('expiring-soon');
+                        }
+                        
+                        sessionTimerElement.textContent = `Expires in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        // Update history if count changed
+                        if (sessionData.history_count !== sessionHistory.length) {
+                            fetchSessionHistory();
+                        }
+                        break;
+                }
+            }
+            
+            // Fetch full session history
+            async function fetchSessionHistory() {
+                try {
+                    const response = await fetch('session/history', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) throw new Error('History fetch failed');
+                    
+                    const data = await response.json();
+                    sessionHistory = data.history || [];
+                    updateSessionHistory(sessionHistory);
+                } catch (error) {
+                    console.error('History fetch error:', error);
+                    historyList.innerHTML = '<p style="color: var(--danger); text-align: center;">Error loading history</p>';
+                }
+            }
+            
+            // Update session history display
+            function updateSessionHistory(history) {
+                historyList.innerHTML = '';
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p style="color: var(--gray); text-align: center;">No history yet</p>';
+                    return;
+                }
+                
+                history.forEach((item, index) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="history-question">${truncateText(item.q, 70)}</div>
+                    `;
+                    historyItem.addEventListener('click', () => {
+                        scrollToMessage(item.q);
+                    });
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            // Scroll to message in chat
+            function scrollToMessage(query) {
+                const messages = document.querySelectorAll('.message');
+                for (let msg of messages) {
+                    if (msg.textContent.includes(query)) {
+                        msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight briefly
+                        msg.style.boxShadow = '0 0 0 2px var(--accent)';
+                        setTimeout(() => {
+                            msg.style.boxShadow = '';
+                        }, 2000);
+                        break;
+                    }
+                }
+            }
+            
+            // Truncate text for history display
+            function truncateText(text, maxLength) {
+                if (!text) return "";
+                return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+            }
+            
+            // Handle session expiry
+            function handleSessionExpiry() {
+                sessionId = null;
+                sessionHistory = [];
+                
+                // Clear chat except initial message
+                while (chatHistory.children.length > 1) {
+                    chatHistory.removeChild(chatHistory.lastChild);
+                }
+                
+                // Add expiry notification
+                addMessage("Your session has expired due to inactivity. A new session will be created with your next question. Please be patient and retry if your request fails or you don’t get a response—your new session will begin once the timer resets.","ai");
+                
+                // Update history display
+                updateSessionHistory([]);
+            }
+            
+            // Handle sending messages
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            async function sendMessage() {
+                const question = userInput.value.trim();
+                if (!question) return;
+                
+                // Add user message to chat
+                addMessage(question, 'user');
+                userInput.value = '';
+                sendButton.disabled = true;
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator';
+                typingIndicator.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                chatHistory.appendChild(typingIndicator);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                
+                try {
+                    // Send query to backend
+                    const response = await fetch('query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: question }),
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Remove typing indicator
+                    chatHistory.removeChild(typingIndicator);
+                    
+                    // Add AI response
+                    addMessage(data.answer, 'ai', data.sources);
+                    
+                    // Update session info
+                    if (data.session_id) {
+                        sessionId = data.session_id;
+                        // Refresh history display
+                        fetchSessionHistory();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    chatHistory.removeChild(typingIndicator);
+                    addMessage("Sorry, there was an error processing your request. Please try again.", 'ai');
+                } finally {
+                    sendButton.disabled = false;
+                }
+            }
+            
+            function addMessage(content, sender, sources = []) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span><i class="${sender === 'ai' ? 'fas fa-robot' : 'fas fa-user'}"></i> ${sender === 'ai' ? 'Legal Assistant' : 'You'}</span>
+                        <span>${timeString}</span>
+                    </div>
+                    <div class="message-content">
+                        ${formatMessageContent(content)}
+                        ${sources && sources.length ? `
+                            <div class="sources-container">
+                                <div class="sources-title"><i class="fas fa-book"></i> Legal Sources:</div>
+                                ${sources.map(source => `<div class="source-item">${source}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+            
+            function formatMessageContent(content) {
+                if (!content) return "";
+                // Convert line breaks to paragraphs
+                const paragraphs = content.split('\n\n');
+                return paragraphs.map(p => `<p>${p}</p>`).join('');
+            }
+            
+            // Initialize the session
+            initializeSession();
+        });
+    </script>
+</body>
+</html>
